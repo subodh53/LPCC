@@ -1,0 +1,67 @@
+# Assembly source code input
+assembly_code = [
+    "START 180",
+    "READ M",
+    "READ N",
+    "LOOP MOVER AREG, M",
+    "MOVER BREG, N",
+    "COMP BREG, ='200'",
+    "BC GT, LOOP",
+    "BACK SUB AREG, M",
+    "COMP AREG, ='500'",
+    "BC LT, BACK",
+    "STOP",
+    "M DS 1",
+    "N DS 1",
+    "END",
+]
+
+# Step 1: First Pass - Build the symbol table
+symbol_table = {}
+
+# Initialize location counter
+lc = 180
+
+# Process the code line by line
+for line in assembly_code:
+    # Split the line into its components
+    parts = line.split()
+    if len(parts) == 0:
+        continue
+
+    # Extract the first component to check for symbols
+    first_word = parts[0]
+
+    # If it's a known directive to set the start address
+    if first_word == "START":
+        if len(parts) > 1:
+            lc = int(parts[1])
+        continue  # No symbol to record for START
+
+    # If the line contains memory declaration
+    if len(parts) > 2 and parts[1] == "DS":
+        # Record the symbol with the current location counter
+        symbol_table[parts[0]] = lc
+        # Increment location counter by the memory size
+        lc += int(parts[2])
+        continue
+
+    # If it's a known instruction or directive that doesn't require a symbol
+    if first_word in ["READ", "MOVER", "COMP", "BC", "SUB", "STOP", "END"]:
+        # Increment location counter for each instruction/operation
+        lc += 1
+        continue
+
+    # If the first word is not in the above lists, it's considered a symbol
+    if first_word not in symbol_table:
+        # Record the symbol with the current location counter
+        symbol_table[first_word] = lc
+
+    # Increment location counter for each symbol
+    lc += 1
+
+# Output the symbol table
+print("Symbol Table:")
+print("Symbol\tLocation Counter")
+for symbol, location_counter in symbol_table.items():
+    print(f"{symbol}\t{location_counter}")
